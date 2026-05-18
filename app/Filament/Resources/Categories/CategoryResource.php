@@ -2,6 +2,9 @@
 
 namespace App\Filament\Resources\Categories;
 
+use Filament\Forms;
+use Filament\Tables;
+use Filament\Actions;
 use App\Filament\Resources\Categories\Pages\CreateCategory;
 use App\Filament\Resources\Categories\Pages\EditCategory;
 use App\Filament\Resources\Categories\Pages\ListCategories;
@@ -23,14 +26,65 @@ class CategoryResource extends Resource
     protected static ?string $recordTitleAttribute = 'Category';
 
     public static function form(Schema $schema): Schema
-    {
-        return CategoryForm::configure($schema);
-    }
+{
+    return $schema
+        ->components([
+            Forms\Components\TextInput::make('nama_kategori')
+                ->label('Nama Kategori')
+                ->placeholder('Contoh: Elektronik, Furniture, ATK')
+                ->required()
+                ->maxLength(255),
+
+            Forms\Components\Textarea::make('deskripsi')
+                ->label('Deskripsi Kategori')
+                ->placeholder('Jelaskan singkat tentang kategori ini')
+                ->required()
+                ->rows(3),
+
+            Forms\Components\FileUpload::make('image')
+                ->label('Foto Kategori')
+                ->image()
+                ->directory('categories')
+                ->visibility('public')
+                ->required(),
+        ]);
+}
 
     public static function table(Table $table): Table
-    {
-        return CategoriesTable::configure($table);
-    }
+{
+    return $table
+        ->columns([
+            Tables\Columns\ImageColumn::make('image')
+                ->label('Foto')
+                ->disk('public'),
+
+            Tables\Columns\TextColumn::make('nama_kategori')
+                ->label('Kategori')
+                ->searchable()
+                ->sortable(),
+
+            Tables\Columns\TextColumn::make('deskripsi')
+                ->label('Deskripsi')
+                ->limit(50),
+
+            Tables\Columns\TextColumn::make('created_at')
+                ->label('Ditambahkan')
+                ->dateTime('d M Y')
+                ->sortable(),
+        ])
+        ->filters([
+            //
+        ])
+        ->actions([
+            Actions\EditAction::make(),
+            Actions\DeleteAction::make(),
+        ])
+        ->bulkActions([
+            Actions\BulkActionGroup::make([
+                Actions\DeleteBulkAction::make(),
+            ]),
+        ]);
+}
 
     public static function getRelations(): array
     {
